@@ -14,50 +14,56 @@ export type BlogPost = {
   author?: string;
 };
 
-export const blogPosts: BlogPost[] = [
-  {
-    id: 1,
-    slug: 'acelerando-o-portfolio-nextjs-com-ia',
-    title: 'Acelerando o portfólio Next.js com IA',
-    image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80',
-    date: '2025-01-14',
-    excerpt: 'Como o Copilot acelerou o desenvolvimento do portfólio Next.js com sugestões inteligentes e integração fluida.',
-    content: 'Durante o desenvolvimento deste portfólio, o GitHub Copilot foi essencial para gerar componentes como Footer, Header e About. Ele sugeriu soluções para problemas de duplicidade, erros de JSX e até para estilização avançada com Tailwind CSS.',
-    tags: ['Next.js', 'IA', 'Tailwind'],
-    author: 'Dayvson Marques',
-  },
-  {
-    id: 2,
-    slug: 'refatoracao-inteligente-erros-comuns-e-solucoes',
-    title: 'Refatoração inteligente: erros comuns e soluções',
-    image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80',
-    date: '2025-01-13',
-    excerpt: 'Veja como o Copilot ajudou a identificar e corrigir duplicidades e erros de sintaxe em componentes React.',
-    content: 'Ao longo do projeto, enfrentei problemas de duplicidade e erros de JSX, especialmente no Footer. O Copilot sugeriu patches para remover imports duplicados, corrigir tags e garantir um componente limpo.',
-    tags: ['Refatoração', 'Erros', 'Copilot'],
-    author: 'Dayvson Marques',
-  },
-  {
-    id: 3,
-    slug: 'tailwind-na-pratica-dicas-de-estilizacao-moderna',
-    title: 'Tailwind na prática: dicas de estilização moderna',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-    date: '2025-01-12',
-    excerpt: 'Copilot sugeriu classes Tailwind para gradientes, responsividade e animações, tornando o visual moderno e fluido.',
-    content: 'A estilização do Footer e outros componentes foi facilitada pelo Copilot, que sugeriu classes Tailwind para gradientes, espaçamentos e animações.',
-    tags: ['Tailwind', 'CSS', 'Design'],
-    author: 'Dayvson Marques',
-  },
-];
+async function getPosts(limit?: number): Promise<BlogPost[]> {
+  try {
+    const url = limit 
+      ? `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/posts?limit=${limit}`
+      : `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/posts`;
+    
+    const response = await fetch(url, {
+      next: { revalidate: 3600 } // Revalidate every hour
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch posts');
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    return [];
+  }
+}
 
-export default function BlogPosts() {
+interface BlogPostsProps {
+  limit?: number;
+}
+
+export default async function BlogPosts({ limit }: BlogPostsProps = {}) {
+  const posts = await getPosts(limit);
+
+  if (posts.length === 0) {
+    return (
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <h1 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Blog Posts
+        </h1>
+        <div className="text-center py-12">
+          <p className="text-gray-600 dark:text-gray-300">
+            Nenhum post encontrado.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       <h1 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
         Blog Posts
       </h1>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {blogPosts.map((post) => (
+        {posts.map((post) => (
           <article
             key={post.id}
             className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
@@ -91,7 +97,7 @@ export default function BlogPosts() {
               <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
                 {post.excerpt}
               </p>
-              {post.tags && (
+              {post.tags && post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {post.tags.map((tag) => (
                     <span

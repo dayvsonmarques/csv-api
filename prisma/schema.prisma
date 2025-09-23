@@ -44,3 +44,19 @@ model Permission {
   group   Group? @relation(fields: [groupId], references: [id])
   groupId Int?
 }
+
+model BlogPost {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  title     String
+  excerpt   String
+  content   String
+  image     String
+  author    String   @default("Dayvson Marques")
+  published Boolean  @default(true)
+  tags      String?  // JSON string com array de tags
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("blog_posts")
+}
