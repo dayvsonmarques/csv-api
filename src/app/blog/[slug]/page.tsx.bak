@@ -1,0 +1,52 @@
+import { notFound } from 'next/navigation';
+import { getBlogPost } from '@/lib/blog';
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function BlogPostPage({ params }: PageProps) {
+  const { slug } = await params;
+  const post = await getBlogPost(slug);
+
+  if (!post) {
+    notFound();
+  }
+
+  return (
+    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+      <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>{post.title}</h1>
+      <div style={{ marginBottom: '1rem', color: '#666' }}>
+        <span>{post.date}</span>
+        {post.author && <span> • {post.author}</span>}
+      </div>
+      {post.tags && (
+        <div style={{ marginBottom: '2rem' }}>
+          {post.tags.map(tag => (
+            <span key={tag} style={{ 
+              background: '#e5e7eb', 
+              padding: '4px 8px', 
+              borderRadius: '4px', 
+              marginRight: '8px',
+              fontSize: '0.875rem'
+            }}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+      <div style={{ lineHeight: '1.6' }}>
+        {post.content.split('\n\n').map((paragraph, index) => (
+          <p key={index} style={{ marginBottom: '1rem' }}>
+            {paragraph}
+          </p>
+        ))}
+      </div>
+      <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+        <a href="/blog" style={{ color: '#3b82f6', textDecoration: 'none' }}>
+          ← Voltar ao Blog
+        </a>
+      </div>
+    </div>
+  );
+}
