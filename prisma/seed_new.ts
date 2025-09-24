@@ -1,99 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Permissões
-  // Cria permissões se não existirem
-  await prisma.permission.upsert({
-    where: { name: 'admin' },
-    update: {},
-    create: { name: 'admin' }
-  });
-  await prisma.permission.upsert({
-    where: { name: 'editor' },
-    update: {},
-    create: { name: 'editor' }
-  });
-  await prisma.permission.upsert({
-    where: { name: 'viewer' },
-    update: {},
-    create: { name: 'viewer' }
-  });
-
-  // Grupos
-  const adminGroup = await prisma.group.upsert({
-    where: { name: 'Admin' },
-    update: {},
-    create: {
-      name: 'Admin',
-      permissions: {
-        connect: [{ name: 'admin' }, { name: 'editor' }, { name: 'viewer' }]
-      }
-    }
-  });
-  const editorGroup = await prisma.group.upsert({
-    where: { name: 'Editor' },
-    update: {},
-    create: {
-      name: 'Editor',
-      permissions: {
-        connect: [{ name: 'editor' }, { name: 'viewer' }]
-      }
-    }
-  });
-  const viewerGroup = await prisma.group.upsert({
-    where: { name: 'Viewer' },
-    update: {},
-    create: {
-      name: 'Viewer',
-      permissions: {
-        connect: [{ name: 'viewer' }]
-      }
-    }
-  });
-
-  // Usuário admin
-  const password = await hash('admin123', 10);
-  await prisma.user.upsert({
-    where: { email: 'admin@admin.com' },
-    update: {},
-    create: {
-      name: 'Administrador',
-      email: 'admin@admin.com',
-      password,
-      groupId: adminGroup.id
-    }
-  });
-
-  // Usuário editor
-  await prisma.user.upsert({
-    where: { email: 'editor@editor.com' },
-    update: {},
-    create: {
-      name: 'Editor',
-      email: 'editor@editor.com',
-      password: await hash('editor123', 10),
-      groupId: editorGroup.id
-    }
-  });
-
-  // Usuário viewer
-  await prisma.user.upsert({
-    where: { email: 'viewer@viewer.com' },
-    update: {},
-    create: {
-      name: 'Viewer',
-      email: 'viewer@viewer.com',
-      password: await hash('viewer123', 10),
-      groupId: viewerGroup.id
-    }
-  });
-
-  console.log('Dados iniciais criados!');
-
-  // Blog Posts
+  // Blog Posts com as 7 postagens originais
   const blogPosts = [
     {
       slug: "acelerando-o-portfolio-nextjs-com-ia",
@@ -112,7 +22,6 @@ Além disso, a IA pode acelerar significativamente o processo de criação de co
 A integração entre desenvolvimento tradicional e IA não substitui a expertise humana, mas a amplifica. O desenvolvedor continua sendo o arquiteto das decisões importantes, mas agora conta com um assistente incrivelmente capaz para executar tarefas complexas e sugerir melhorias contínuas no processo de desenvolvimento.`,
       image: "/neural.svg",
       author: "Dayvson Marques",
-      date: "15 de setembro de 2024",
       tags: ["Next.js", "IA", "Desenvolvimento", "Portfólio"],
       published: true
     },
@@ -294,41 +203,15 @@ Organizations considering micro-frontends devem carefully evaluate se a added co
       data: post
     });
   }
-    });
-  }
 
-  console.log('Seed completed successfully!');
-    {
-      slug: 'tailwind-na-pratica-dicas-de-estilizacao-moderna',
-      title: 'Tailwind na prática: dicas de estilização moderna',
-      excerpt: 'Copilot sugeriu classes Tailwind para gradientes, responsividade e animações, tornando o visual moderno e fluido.',
-      content: `A estilização do Footer e outros componentes foi facilitada pelo Copilot, que sugeriu classes Tailwind para gradientes, espaçamentos e animações. Isso permitiu criar uma interface moderna, responsiva e com transições suaves, sem perder tempo pesquisando na documentação. O resultado foi um design consistente e profissional que se adapta perfeitamente a diferentes dispositivos e resoluções.
-
-O uso de Tailwind CSS trouxe agilidade na criação de layouts, com sugestões automáticas para espaçamentos, cores e efeitos visuais. A biblioteca de utilitários permitiu implementar designs complexos sem escrever CSS customizado, mantendo o código limpo e organizado. As classes semânticas facilitaram a manutenção e a colaboração entre designers e desenvolvedores.
-
-A responsividade foi garantida por meio de breakpoints e utilitários do Tailwind, tornando o site acessível em diferentes dispositivos. O sistema de grid responsivo adaptou-se automaticamente a telas de smartphones, tablets e desktops, proporcionando uma experiência otimizada para cada tipo de dispositivo. As técnicas mobile-first garantiram performance e usabilidade em todos os cenários.
-
-Animações e transições suaves foram implementadas com facilidade, graças às recomendações do Copilot. As microinterações adicionaram personalidade ao site, criando uma experiência mais envolvente e profissional. Efeitos hover, transições de página e animações de carregamento foram implementados com precisão.
-
-O conteúdo técnico do blog foi automatizado, mostrando o potencial da IA para gerar textos relevantes e contextualizados. A geração inteligente de conteúdo garantiu que cada artigo fosse único, informativo e otimizado para SEO, mantendo a qualidade editorial em alto nível.
-
-A paleta de cores foi cuidadosamente selecionada usando as ferramentas de design do Tailwind, criando um esquema visual harmonioso que reforça a identidade da marca. As cores foram escolhidas considerando acessibilidade, contraste e psicologia das cores, resultando em uma interface que é tanto bonita quanto funcional.
-
-Por fim, a padronização visual elevou a experiência do usuário, tornando o portfólio mais profissional e atrativo. A combinação de Tailwind CSS com as sugestões inteligentes do Copilot resultou em um produto final que supera as expectativas em termos de qualidade visual e experiência do usuário.`,
-      image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-      tags: JSON.stringify(['Tailwind', 'CSS', 'Design'])
-    }
-  ];
-
-  for (const post of blogPosts) {
-    await prisma.blogPost.upsert({
-      where: { slug: post.slug },
-      update: post,
-      create: post
-    });
-  }
-
-  console.log('Posts do blog criados!');
+  console.log('Seed completed successfully with 7 blog posts!');
 }
 
-main().finally(() => prisma.$disconnect());
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

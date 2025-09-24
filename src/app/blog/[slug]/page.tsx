@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getBlogPost } from '@/lib/blog';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import BlogImageParallax from '@/components/BlogImageParallax';
 import Link from 'next/link';
 
 interface PageProps {
@@ -19,6 +20,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
+      <BlogImageParallax src={post.image} alt={post.title} />
       <main className="max-w-4xl mx-auto px-6 py-12 mt-20">
         <nav className="mb-8">
           <ol className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
